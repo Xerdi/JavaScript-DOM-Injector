@@ -25,6 +25,7 @@ There can be data-* attributes on inputs, textAreas and form for achieving a bui
 ```html
 <!-- this is the target where the form will inject data -->
 <div id="target"></div>
+
 <form id="formInjector"
   data-type="div.jumbotron"
   data-targetid="target"
@@ -47,3 +48,17 @@ There can be data-* attributes on inputs, textAreas and form for achieving a bui
 </form>
 ```
 In the example you can see ```data-path="footer ul"``` which not exists. The footer and ul will be generated if not present. If you want a seperate footer for an input, you can give it a class or id, as it will then be inserted in a new element.
+
+## JavaScript Hook Example
+The previous mentioned HTML form will be hooked in this example.
+```javascript
+//  retrieve the DOM form
+var form = document.getElementById("formInjector");
+//  create a Builder object with the given form
+var builder = new Builder(form);
+//  initiate the building when focused on the form
+form.addEventListener('focus', function () {
+  builder.start();
+}, true);
+
+```
