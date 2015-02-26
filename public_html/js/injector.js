@@ -14,32 +14,35 @@
  * limitations under the License.
  */
 
-InjectorShop = function () {};
-InjectorShop.operators = [];
-InjectorShop.signContract = function (injector) {
-    InjectorShop.operators.push(injector);
-    injector.input.addEventListener('keyup', InjectorShop.link, true);
-    if(injector instanceof TimedInjector)
-        injector.activate();
+InjectorShop = {
+    operators: [],
+    
+    signContract: function (injector) {
+        this.operators.push(injector);
+        injector.input.addEventListener('keyup', this.trigger, true);
+        if(injector instanceof TimedInjector)
+            injector.activate();
+    },
+    
+    breakContract: function (injector) {
+        if(injector instanceof TimedInjector)
+            injector.deactivate();
+        injector.input.removeEventListener('keyup', this.trigger, true);
+        delete this.operators[this.operators.indexOf(injector)];
+    },
+    
+    trigger: function () {
+        InjectorShop.getByInput(this).refresh(this.value);
+    },
+    
+    getByInput: function (input) {
+        for (var x in this.operators)
+            if (this.operators[x].input === input)
+                return this.operators[x];
+        return null;
+    }    
 };
-InjectorShop.breakContract = function (injector) {
-    if(injector instanceof TimedInjector)
-        injector.deactivate();
-    injector.input.removeEventListener('keyup', InjectorShop.link, true);
-    delete InjectorShop.operators[InjectorShop.operators.indexOf(injector)];
-};
-InjectorShop.trigger = function (input) {
-    InjectorShop.getByInput(input).refresh(input.value);
-};
-InjectorShop.link = function () {
-    InjectorShop.trigger(this);
-};
-InjectorShop.getByInput = function (input) {
-    for (var x in InjectorShop.operators)
-        if (InjectorShop.operators[x].input === input)
-            return InjectorShop.operators[x];
-    return null;
-};
+
 Injector = function (input, parent) {
     var data = input.dataset;
     this.base = document.createElement(data.type);
@@ -78,13 +81,20 @@ BeastyInjector = function (input, parent) {
     };
     this.refresh(input.value);
 };
+
+FAKE_KEYBOARD_EVENT = document.createEvent("KeyboardEvent");
+FAKE_KEYBOARD_EVENT.initKeyEvent ("keyup",
+    false, false, null,
+    0, 0, 0, 0,
+    0, 0);
+
 TimedInjector = function (input, parent, interval) {
     Injector.call(this, input, parent);
     this.interval = (interval) ? interval : 1000;
     this.timer = null;
     this.tick = function () {
         input.value = new Date().toLocaleString();
-        InjectorShop.trigger(input);
+        input.dispatchEvent(FAKE_KEYBOARD_EVENT);
     };
 };
 TimedInjector.prototype = Object.create(Injector.prototype);
@@ -102,7 +112,7 @@ Builder = function (form) {
     this.parent = Builder.path(data.type)[0];
     this.inputs = [];
     var inp = form.elements;
-    for (var i in inp) {
+    for (var i = 0; i < inp.length; i++) {
         if (!inp[i].dataset.type)
             continue;
         var path = this.getPath(inp[i].dataset.path);
