@@ -102,9 +102,8 @@ Builder = function (form) {
     this.parent = Builder.path(data.type)[0];
     this.inputs = [];
     var inp = form.elements;
-    console.log(inp);
     for (var i in inp) {
-        if (!inp[i].dataset)
+        if (!inp[i].dataset.type)
             continue;
         var path = this.getPath(inp[i].dataset.path);
         if (inp[i].name === 'time')
