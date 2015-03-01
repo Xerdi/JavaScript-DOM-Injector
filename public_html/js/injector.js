@@ -172,7 +172,7 @@ Builder.prototype.stop = function () {
 };
 Builder.path = function (str) {
     var result = [];
-    var elems = str.split(" ");
+    var elems = (str.indexOf(" ") > -1) ? str.split(" ") : [str];
     for (var x in elems) {
         var e = elems[x];
         var tmp;
